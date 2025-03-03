@@ -27,6 +27,9 @@ var conversations = builder.AddAzureCosmosDB("cosmos")
                            .AddCosmosDatabase("db")
                            .AddContainer("conversations", "/id");
 
+var sqlServer = builder.AddSqlServer("sqlserver");
+var sqlDb = sqlServer.AddDatabase("exampleDb");
+
 // Redis is used to store and broadcast the live message stream
 // so that multiple clients can connect to the same conversation.
 var cache = builder.AddRedis("cache")
@@ -39,6 +42,8 @@ var chatapi = builder.AddProject<Projects.ChatApi>("chatapi")
                      .WaitFor(conversations)
                      .WithReference(cache)
                      .WaitFor(cache)
+                     .WithReference(sqlDb)
+                     .WaitFor(sqlDb)
                      .PublishAsAzureContainerApp((infra, app) =>
                       {
                           app.Configuration.Ingress.AllowInsecure = true;
